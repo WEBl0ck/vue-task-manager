@@ -31,11 +31,7 @@ const selectorValues = [
         v-for="selectorValue in selectorValues"
         :key="selectorValue.title"
         class="task-menu-selector--item"
-        :class="
-          selectorValue.title === activeItem
-            ? 'task-menu-selector--item_active'
-            : ''
-        "
+        :class="selectorValue.title === activeItem ? 'task-menu-selector--item_active' : ''"
         @click="activeItem = selectorValue.title"
       >
         {{ selectorValue.title }}
@@ -55,7 +51,7 @@ const selectorValues = [
 
 .task-menu-selector-container {
   overflow: hidden;
-  /*overflow-x: scroll;*/
+  min-height: 30px;
   background-color: var(--system-white-50);
   border-radius: 15px;
 }
