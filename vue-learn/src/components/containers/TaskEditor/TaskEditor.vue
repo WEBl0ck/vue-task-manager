@@ -1,5 +1,45 @@
 <script setup lang="ts">
 import CardItem from "../../shared/CardItem.vue";
+
+import { useTasksStore } from "@/stores/tasks";
+import { useAutoResize } from "@/hooks/useAutoResize";
+
+import { generateEmptyTask } from "@/utils/utils";
+
+import type { Task } from "@/types/tasks.types";
+
+const tasksStore = useTasksStore();
+const { autoResize } = useAutoResize();
+
+tasksStore.$onAction(({ store, name, args, after }) => {
+  after((result) => {
+    console.log(name);
+    console.log(store.tasks);
+  });
+});
+
+const handleAddSubTask = () => {
+  const subTask = generateEmptyTask();
+
+  tasksStore.addSubTask(subTask);
+  tasksStore.updateTaskStatus(tasksStore.getCurrentTask.id, {
+    stepsDone: typeof tasksStore.getCurrentTask.status === "object" ? tasksStore.getCurrentTask.status.stepsDone : 0,
+    stepsAmount: tasksStore.getCurrentTask.subtasks.length,
+  });
+};
+
+const handleChangeSubTaskStatus = (subTask: Task) => {
+  if (typeof tasksStore.getCurrentTask.status !== "object") return null;
+
+  tasksStore.updateSubTaskStatus(subTask.id, subTask.status === "DONE" ? "UNDONE" : "DONE");
+  tasksStore.updateTaskStatus(tasksStore.getCurrentTask.id, {
+    stepsDone:
+      subTask.status === "DONE"
+        ? tasksStore.getCurrentTask.status.stepsDone - 1
+        : tasksStore.getCurrentTask.status.stepsDone + 1,
+    stepsAmount: tasksStore.getCurrentTask.subtasks.length,
+  });
+};
 </script>
 
 <template>
@@ -9,22 +49,28 @@ import CardItem from "../../shared/CardItem.vue";
         <img src="../../../assets/icons/set_timer.svg" />
         <img src="../../../assets/icons/mark_as_completed.svg" />
       </div>
-      <div class="task-editor-header--title">Learn new words</div>
+      <input v-model="tasksStore.getCurrentTask.title" class="task-editor-header--title" />
       <div class="task-editor-header--options">
         <img src="../../../assets/icons/options.svg" />
       </div>
     </div>
     <div class="task-editor-body">
-      <div class="task-editor-body--description">
-        I need to learn new english words before new year is comming for long time and we all starting to be something
-        real.
-      </div>
+      <textarea
+        :ref="autoResize"
+        v-model="tasksStore.getCurrentTask.description"
+        class="task-editor-body--description"
+      />
       <div class="task-editor-sub-tasks">
-        <CardItem icon="UNCHECKED" title="Title" />
-        <CardItem icon="UNCHECKED" title="Title" description="Description" />
-        <CardItem icon="CHECKED" title="Title" description="Description" />
+        <CardItem
+          v-for="subTask in tasksStore.getCurrentTask.subtasks"
+          :key="subTask.id"
+          :icon="subTask.status === 'DONE' ? 'CHECKED' : 'UNCHECKED'"
+          :title="subTask.title"
+          :description="subTask.description"
+          :onIconClick="() => handleChangeSubTaskStatus(subTask)"
+        />
       </div>
-      <CardItem sx="task-editor-sub-task-button" title="Add sub task" icon="PLUS" />
+      <CardItem sx="task-editor-sub-task-button" title="Add sub task" icon="PLUS" @click="handleAddSubTask" />
     </div>
   </div>
 </template>
@@ -36,6 +82,7 @@ import CardItem from "../../shared/CardItem.vue";
   width: 70%;
   border-radius: 30px;
   padding: 15px;
+  overflow: hidden;
 }
 
 .task-editor-header {
@@ -48,19 +95,27 @@ import CardItem from "../../shared/CardItem.vue";
   font-weight: 700;
   font-size: 30px;
   line-height: 40px;
+  background-color: transparent;
 }
 
 .task-editor-body {
-  max-width: 500px;
+  max-width: 600px;
   width: 100%;
+  height: calc(100% - 57px);
   margin: 0 auto;
   margin-top: 15px;
+  overflow-y: scroll;
 }
 
 .task-editor-body--description {
   font-size: 15px;
   line-height: 16px;
   font-weight: 500;
+  resize: none;
+  overflow: hidden;
+  width: 100%;
+  min-height: 100px;
+  background-color: transparent;
 }
 
 .task-editor-header--actions {
@@ -101,5 +156,8 @@ import CardItem from "../../shared/CardItem.vue";
   gap: 10px;
   cursor: pointer;
   min-height: 70px;
+}
+
+.task-editor-description-wrapper {
 }
 </style>

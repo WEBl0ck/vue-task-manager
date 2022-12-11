@@ -1,17 +1,28 @@
 <script setup lang="ts">
 const props = defineProps<{
+  onClick?: () => void;
+  onIconClick?: () => void;
   title?: string;
   description?: string;
-  deadline?: [string, string];
-  status?: "DONE" | "UNDONE" | [number, number];
+  deadline?: null | {
+    from: string;
+    to: string;
+  };
+  status?:
+    | "DONE"
+    | "UNDONE"
+    | {
+        stepsDone: number;
+        stepsAmount: number;
+      };
   icon?: "PLUS" | "CHECKED" | "UNCHECKED";
   sx?: string;
 }>();
 </script>
 
 <template>
-  <div class="card" :class="sx">
-    <div v-if="typeof icon === 'string'" class="card-left-section">
+  <div @click="onClick" class="card" :class="sx">
+    <div v-if="typeof icon === 'string'" class="card-left-section" @click="onIconClick">
       <img v-if="icon === 'PLUS'" src="../../assets/icons/plus.svg" />
       <img v-if="icon === 'CHECKED'" src="../../assets/icons/checkbox_checked.svg" />
       <img v-if="icon === 'UNCHECKED'" src="../../assets/icons/checkbox_unchecked.svg" />
@@ -19,7 +30,7 @@ const props = defineProps<{
     <div class="card-middle-section">
       <div className="card-middle-section--header">
         <h1 class="card-middle-section--title">{{ title }}</h1>
-        <h1 v-if="deadline" class="card-middle-section--time">{{ `${deadline[0]} - ${deadline[1]}` }}</h1>
+        <h1 v-if="deadline" class="card-middle-section--time">{{ `${deadline.from} - ${deadline.to}` }}</h1>
       </div>
       <p className="card-middle-section--body">{{ description }}</p>
     </div>
@@ -41,6 +52,7 @@ const props = defineProps<{
   align-items: center;
   padding: 10px;
   gap: 10px;
+  cursor: pointer;
 }
 
 .card-left-section,
@@ -74,6 +86,7 @@ const props = defineProps<{
 }
 
 .card-middle-section--body {
+  line-height: 16px;
   max-width: 200px;
   display: -webkit-box;
   word-break: break-all;
