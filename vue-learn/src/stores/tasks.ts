@@ -3,7 +3,9 @@ import { defineStore } from "pinia";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 
 import type { Task, Deadline, status } from "../types/tasks.types";
+
 const { getLocalStorageData } = useLocalStorage();
+
 export const useTasksStore = defineStore("tasks", {
   state: () => ({
     tasks: getLocalStorageData("tasks") as Task[],
@@ -14,6 +16,7 @@ export const useTasksStore = defineStore("tasks", {
     getUncompleted: (state) => state.tasks.filter((task) => task.status === "UNDONE"),
     getInProgress: (state) => state.tasks.filter((task) => typeof task.status === "object"),
     getCurrentTask: (state) => state.tasks.filter((task) => task.id === state.currentTask.id)[0],
+    getTasksCount: (state) => state.tasks.length,
   },
   actions: {
     addTask(newTask: Task) {
