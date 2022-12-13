@@ -48,5 +48,3 @@ export const useLocalStorage = () => {
     updateTaskData,
   };
 };
-
-export default useLocalStorage;
