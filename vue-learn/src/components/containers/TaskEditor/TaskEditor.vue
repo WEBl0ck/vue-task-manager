@@ -1,20 +1,29 @@
 <script setup lang="ts">
+import { ref, watch, computed } from "vue";
+import debounce from "lodash.debounce";
+
 import CardItem from "../../shared/CardItem.vue";
+import ProgressBar from "@/components/shared/ProgressBar.vue";
 
 import { useTasksStore } from "@/stores/tasks";
 import { useAutoResize } from "@/hooks/useAutoResize";
+import { useLocalStorage } from "@/hooks/useLocalStorage";
 
 import { generateEmptyTask } from "@/utils/utils";
 
 import type { Task } from "@/types/tasks.types";
 
+const isTaskCompleted = ref(false);
+const progress = ref(0);
+
 const tasksStore = useTasksStore();
+const { updateTaskData } = useLocalStorage();
 const { autoResize } = useAutoResize();
 
 tasksStore.$onAction(({ store, name, args, after }) => {
   after((result) => {
-    console.log(name);
-    console.log(store.tasks);
+    // console.log(name);
+    // console.log(store.tasks);
   });
 });
 
@@ -40,14 +49,43 @@ const handleChangeSubTaskStatus = (subTask: Task) => {
     stepsAmount: tasksStore.getCurrentTask.subtasks.length,
   });
 };
+
+const debounceSaveChanges = debounce(() => {
+  updateTaskData(tasksStore.getCurrentTask);
+  console.log(tasksStore.getCurrentTask);
+}, 1000);
+
+watch(
+  () => tasksStore.getCurrentTask.title,
+  () => debounceSaveChanges()
+);
+
+watch(
+  () => tasksStore.getCurrentTask.description,
+  () => debounceSaveChanges()
+);
+
+watch(
+  () => tasksStore.getCurrentTask,
+  () => console.log("watcher >>", tasksStore.getCurrentTask)
+);
 </script>
 
 <template>
   <div className="task-editor-container">
     <div class="task-editor-header">
       <div class="task-editor-header--actions">
-        <img src="../../../assets/icons/set_timer.svg" />
-        <img src="../../../assets/icons/mark_as_completed.svg" />
+        <ProgressBar color="#000000" :progress="progress" @click="() => (progress = progress === 100 ? 0 : 100)" />
+        <img
+          v-if="!isTaskCompleted"
+          @click="() => (isTaskCompleted = true)"
+          src="../../../assets/icons/mark_as_completed.svg"
+        />
+        <img
+          v-if="isTaskCompleted"
+          @click="() => (isTaskCompleted = false)"
+          src="../../../assets/icons/status_done.svg"
+        />
       </div>
       <input v-model="tasksStore.getCurrentTask.title" class="task-editor-header--title" />
       <div class="task-editor-header--options">
@@ -126,6 +164,10 @@ const handleChangeSubTaskStatus = (subTask: Task) => {
 .task-editor-header--actions img {
   height: 35px;
   width: 35px;
+  cursor: pointer;
+}
+
+.task-editor-header--actions svg {
   cursor: pointer;
 }
 
