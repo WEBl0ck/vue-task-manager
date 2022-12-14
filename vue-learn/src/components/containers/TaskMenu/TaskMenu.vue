@@ -14,11 +14,8 @@ const { addTaskToStorage } = useLocalStorage();
 const tasksStore = useTasksStore();
 
 tasksStore.$onAction(({ store, name, args, after }) => {
-  console.log(name);
-  console.log(args);
   after((result) => {
     if (name === "addTask") addTaskToStorage(...args);
-    console.log(result);
   });
 });
 
@@ -36,7 +33,6 @@ const handleCreateTask = () => {
 <template>
   <div className="task-menu-container">
     <TaskMenuHeader />
-    <TaskMenuSelector />
     <div className="task-menu-tasks">
       <CardItem
         v-for="task in tasksStore.tasks"
