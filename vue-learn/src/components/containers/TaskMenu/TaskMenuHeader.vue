@@ -1,9 +1,13 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { useTasksStore } from "../../../stores/tasks";
+
+const tasksStore = useTasksStore();
+</script>
 
 <template>
   <header className="task-menu-header">
     <button className="task-menu-header--button">Edit</button>
-    <div className="task-menu-header--counter">6 items</div>
+    <div className="task-menu-header--counter">{{ tasksStore.getTasksCount }} items</div>
     <button className="task-menu-header--button">Sort</button>
   </header>
 </template>
