@@ -1,4 +1,8 @@
 <script setup lang="ts">
+import { computed } from "vue";
+
+import ProgressBar from "./ProgressBar.vue";
+
 const props = defineProps<{
   onClick?: () => void;
   onIconClick?: () => void;
@@ -18,10 +22,20 @@ const props = defineProps<{
   icon?: "PLUS" | "CHECKED" | "UNCHECKED";
   sx?: string;
 }>();
+
+const subTasksProgress = computed(() => {
+  if (typeof props.status !== "object") return 0;
+
+  const progressInPercents = (props.status.stepsDone / props.status.stepsAmount) * 100;
+
+  return Math.round(progressInPercents);
+});
+
+console.log("🚀 ~ subTasksProgress ~ subTasksProgress", subTasksProgress.value);
 </script>
 
 <template>
-  <div @click="onClick" class="card" :class="sx">
+  <div class="card" :class="sx" @click="onClick">
     <div v-if="typeof icon === 'string'" class="card-left-section" @click="onIconClick">
       <img v-if="icon === 'PLUS'" src="../../assets/icons/plus.svg" />
       <img v-if="icon === 'CHECKED'" src="../../assets/icons/checkbox_checked.svg" />
@@ -35,9 +49,8 @@ const props = defineProps<{
       <p className="card-middle-section--body">{{ description }}</p>
     </div>
     <div class="card-right-section">
-      <img v-if="typeof status === 'object'" src="../../assets/icons/timer.svg" />
+      <ProgressBar v-if="typeof status === 'object'" color="#000000" :progress="subTasksProgress" />
       <img v-if="status === 'DONE'" src="../../assets/icons/status_done.svg" />
-      <img v-if="status === 'UNDONE'" src="../../assets/icons/status_undone.svg" />
     </div>
   </div>
 </template>
